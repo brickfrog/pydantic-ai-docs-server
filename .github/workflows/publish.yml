@@ -143,9 +143,16 @@ jobs:
       - name: Create package
         if: steps.check_version.outputs.should_build == 'true'
         run: |
-          # Package the server with npm pack
-          npm pack
-          echo "PACKAGE_FILE=$(ls pydantic-ai-docs-server-*.tgz)" >> $GITHUB_ENV
+          # Create a proper release archive with docs
+          mkdir -p release-package
+          cp -r dist .docs README.md package.json release-package/
+          
+          # Create archive with documentation
+          cd release-package
+          tar -czvf ../pydantic-ai-docs-server-${{ steps.check_version.outputs.version }}.tar.gz *
+          cd ..
+          
+          echo "PACKAGE_FILE=pydantic-ai-docs-server-${{ steps.check_version.outputs.version }}.tar.gz" >> $GITHUB_ENV
 
       - name: Create Git Tag
         if: steps.check_version.outputs.should_build == 'true' && github.event_name != 'push'
