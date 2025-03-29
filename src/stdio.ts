@@ -396,4 +396,8 @@ npx -y github:brickfrog/pydantic-ai-docs-server
 main().catch(error => {
   console.error("Fatal error:", error);
   process.exit(1);
-}); 
+});
+
+// Add a startup message so we know it's running
+console.log("Pydantic AI Docs Server starting...");
+console.log("Using documentation from: " + fromPackageRoot("docs/raw")); 
