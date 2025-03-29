@@ -1,13 +1,20 @@
 name: Create GitHub Release
 
 on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight
   push:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force update even if versions match'
+        type: boolean
+        default: false
 
 jobs:
-  build-release:
+  check-and-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,17 +31,48 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
+      
+      - name: Check pydantic-ai version
+        id: check_version
+        run: |
+          # Clone pydantic-ai repo
+          git clone https://github.com/pydantic/pydantic-ai.git /tmp/pydantic-ai
+          
+          # Get the latest version of pydantic-ai
+          cd /tmp/pydantic-ai
+          PYDANTIC_VERSION=$(grep -o 'version = "[^"]*"' pyproject.toml | cut -d'"' -f2)
+          echo "PYDANTIC_VERSION=$PYDANTIC_VERSION" >> $GITHUB_ENV
+          echo "Found pydantic-ai version: $PYDANTIC_VERSION"
+          
+          # Check if there's already a release with this version
+          cd $GITHUB_WORKSPACE
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_update }}" == "true" ]]; then
+            echo "Force update requested, will create release regardless of version"
+            echo "SHOULD_BUILD=true" >> $GITHUB_ENV
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "Tag push detected, will create release"
+            echo "SHOULD_BUILD=true" >> $GITHUB_ENV
+          else
+            # Check if this version already exists as a release
+            EXISTING_RELEASE=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases | grep -o "\"tag_name\":\"v$PYDANTIC_VERSION\"" || echo "")
+            if [[ -z "$EXISTING_RELEASE" ]]; then
+              echo "No existing release for v$PYDANTIC_VERSION found, will create release"
+              echo "SHOULD_BUILD=true" >> $GITHUB_ENV
+            else
+              echo "Release for v$PYDANTIC_VERSION already exists, skipping"
+              echo "SHOULD_BUILD=false" >> $GITHUB_ENV
+            fi
+          fi
 
       - name: Install dependencies
+        if: env.SHOULD_BUILD == 'true'
         run: npm ci
 
       - name: Get pydantic-ai docs
+        if: env.SHOULD_BUILD == 'true'
         run: |
           # Create .docs directory
           mkdir -p .docs/raw .docs/organized/code-examples .docs/organized/changelogs
-          
-          # Clone pydantic-ai repo
-          git clone https://github.com/pydantic/pydantic-ai.git /tmp/pydantic-ai
           
           # Copy docs into the .docs/raw directory
           if [ -d "/tmp/pydantic-ai/docs" ]; then
@@ -69,30 +107,47 @@ jobs:
             echo "# Sample Example" > .docs/organized/code-examples/sample.md
           fi
           
-          # Create a placeholder changelog if none exists
-          echo "# Changelog" > .docs/organized/changelogs/pydantic-ai.md
-          echo "## Latest Version" >> .docs/organized/changelogs/pydantic-ai.md
-          echo "- Initial release" >> .docs/organized/changelogs/pydantic-ai.md
+          # Extract changelog from pydantic-ai
+          if [ -f "/tmp/pydantic-ai/CHANGELOG.md" ]; then
+            cp /tmp/pydantic-ai/CHANGELOG.md .docs/organized/changelogs/pydantic-ai.md
+          else
+            # Create a placeholder changelog if none exists
+            echo "# Changelog" > .docs/organized/changelogs/pydantic-ai.md
+            echo "## v$PYDANTIC_VERSION" >> .docs/organized/changelogs/pydantic-ai.md
+            echo "- Initial release" >> .docs/organized/changelogs/pydantic-ai.md
+          fi
 
       - name: Build package
+        if: env.SHOULD_BUILD == 'true'
         run: npm run build
 
       - name: Create package
+        if: env.SHOULD_BUILD == 'true'
         run: |
           # Package the server with npm pack
           npm pack
           echo "PACKAGE_FILE=$(ls pydantic-ai-docs-server-*.tgz)" >> $GITHUB_ENV
 
+      - name: Create Git Tag
+        if: env.SHOULD_BUILD == 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.force_update == 'true'))
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "v$PYDANTIC_VERSION" -m "Release v$PYDANTIC_VERSION"
+          git push origin "v$PYDANTIC_VERSION"
+
       - name: Create GitHub Release
+        if: env.SHOULD_BUILD == 'true'
         uses: softprops/action-gh-release@v1
         with:
-          name: Pre-built Package ${{ github.ref_name != '' && github.ref_name || 'Manual Build' }}
+          name: "pydantic-ai v${{ env.PYDANTIC_VERSION }}"
+          tag_name: ${{ github.ref_name != '' && github.ref_name || format('v{0}', env.PYDANTIC_VERSION) }}
           files: ${{ env.PACKAGE_FILE }}
           generate_release_notes: true
           body: |
-            ## Pre-built Package with Documentation
+            ## Pre-built Package with Documentation for pydantic-ai v${{ env.PYDANTIC_VERSION }}
             
-            This package includes all pydantic-ai documentation.
+            This package includes all pydantic-ai documentation for version ${{ env.PYDANTIC_VERSION }}.
             
             ### Usage in Cursor
             
