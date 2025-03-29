@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "pydantic-ai": {
-      "command": "npx",
-      "args": ["-y", "github:brickfrog/pydantic-ai-docs-server"]
-    }
-  }
-} 
