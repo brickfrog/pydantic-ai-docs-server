@@ -7,7 +7,8 @@
   "types": "dist/index.d.ts",
   "bin": {
     "pydantic-ai-docs-server": "dist/stdio.js",
-    "pydantic-ai-docs-server-update": "bin/pydantic-ai-docs-server-update"
+    "pydantic-ai-docs-server-update": "bin/pydantic-ai-docs-server-update",
+    "pydantic-ai-docs-server-init": "bin/pydantic-ai-docs-server-init"
   },
   "files": [
     "dist",
@@ -15,6 +16,7 @@
     "README.md",
     "import-docs.sh",
     "update.sh",
+    "init.sh",
     "bin"
   ],
   "exports": {
@@ -60,11 +62,12 @@
   },
   "scripts": {
     "prepare-docs": "cross-env PREPARE=true node dist/prepare-docs/prepare.js",
-    "build:cli": "tsup src/stdio.ts src/prepare-docs/prepare.ts --format esm --treeshake=smallest --splitting",
+    "build:cli": "tsup --config tsup.config.js",
     "build": "npm run build:cli",
     "test": "vitest run",
     "lint": "eslint .",
     "update": "./update.sh",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "postinstall": "node dist/prepare-docs/auto-init.js"
   }
 } 

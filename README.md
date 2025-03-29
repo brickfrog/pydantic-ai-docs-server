@@ -51,6 +51,18 @@ Note that the MCP server won't be enabled by default. You'll need to go to Curso
 
 > **Note:** The first time the server runs, it will automatically initialize and download the documentation if it doesn't exist. You don't need to run any additional scripts.
 
+### Manual Initialization
+
+If automatic initialization fails, you can manually initialize the documentation:
+
+```bash
+# Using npx
+npx -y github:brickfrog/pydantic-ai-docs-server/init.sh
+
+# Or if you've cloned the repository:
+./init.sh
+```
+
 ### In Windsurf
 
 Create or update `~/.codeium/windsurf/mcp_config.json`:

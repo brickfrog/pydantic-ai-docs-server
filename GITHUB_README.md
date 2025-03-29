@@ -84,6 +84,20 @@ Create or update `.cursor/mcp.json` in your project root:
 
 > **Note:** The first time the server runs, it will automatically initialize and download the documentation if it doesn't exist. You don't need to run any additional scripts.
 
+### Manual Initialization
+
+If automatic initialization fails, you can manually initialize the documentation:
+
+```bash
+# Using npx
+npx -y github:brickfrog/pydantic-ai-docs-server/init.sh
+
+# Or clone the repository and run
+git clone https://github.com/brickfrog/pydantic-ai-docs-server.git
+cd pydantic-ai-docs-server
+./init.sh
+```
+
 ### Windsurf
 
 Update `~/.codeium/windsurf/mcp_config.json`:
