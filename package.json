@@ -10,8 +10,8 @@
   },
   "files": [
     "dist",
-    ".docs/raw",
-    ".docs/organized",
+    "docs/raw",
+    "docs/organized",
     "README.md",
     "bin"
   ],

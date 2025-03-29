@@ -97,7 +97,7 @@ function decodePackageName(name: string): string {
 }
 
 // Changelogs Tool
-const changelogsDir = fromPackageRoot(".docs/organized/changelogs");
+const changelogsDir = fromPackageRoot("docs/organized/changelogs");
 
 async function listPackageChangelogs() {
   try {
@@ -139,7 +139,7 @@ const changesSchema = z.object({
 });
 
 // Documentation Tool
-const docsBaseDir = fromPackageRoot(".docs/raw/");
+const docsBaseDir = fromPackageRoot("docs/raw/");
 
 // Function to check if MCP server is running with documentation
 function checkDocsStatus() {
@@ -264,7 +264,7 @@ async function getAvailablePaths(): Promise<string[]> {
 }
 
 // Code Examples Tool
-const examplesDir = fromPackageRoot(".docs/organized/code-examples");
+const examplesDir = fromPackageRoot("docs/organized/code-examples");
 
 async function listCodeExamples() {
   try {

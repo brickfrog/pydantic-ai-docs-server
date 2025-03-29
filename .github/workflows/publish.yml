@@ -90,16 +90,16 @@ jobs:
       - name: Get pydantic-ai docs
         if: steps.check_version.outputs.should_build == 'true'
         run: |
-          # Create .docs directory
-          mkdir -p .docs/raw .docs/organized/code-examples .docs/organized/changelogs
+          # Create docs directory (not hidden)
+          mkdir -p docs/raw docs/organized/code-examples docs/organized/changelogs
           
-          # Copy docs into the .docs/raw directory
+          # Copy docs into the docs/raw directory
           if [ -d "/tmp/pydantic-ai/docs" ]; then
-            cp -r /tmp/pydantic-ai/docs/* .docs/raw/
+            cp -r /tmp/pydantic-ai/docs/* docs/raw/
             echo "✅ Documentation copied successfully"
           else
             echo "⚠️ No docs directory found in pydantic-ai repository"
-            echo "sample-content" > .docs/raw/sample.md
+            echo "sample-content" > docs/raw/sample.md
           fi
           
           # Create sample example if examples directory exists
@@ -107,7 +107,7 @@ jobs:
             for example_dir in /tmp/pydantic-ai/examples/*; do
               if [ -d "$example_dir" ]; then
                 example_name=$(basename "$example_dir")
-                example_file=".docs/organized/code-examples/$example_name.md"
+                example_file="docs/organized/code-examples/$example_name.md"
                 echo "# $example_name" > "$example_file"
                 
                 find "$example_dir" -name "*.py" | while read -r py_file; do
@@ -123,17 +123,17 @@ jobs:
             echo "✅ Examples processed successfully"
           else
             echo "⚠️ No examples directory found in pydantic-ai repository"
-            echo "# Sample Example" > .docs/organized/code-examples/sample.md
+            echo "# Sample Example" > docs/organized/code-examples/sample.md
           fi
           
           # Extract changelog from pydantic-ai
           if [ -f "/tmp/pydantic-ai/CHANGELOG.md" ]; then
-            cp /tmp/pydantic-ai/CHANGELOG.md .docs/organized/changelogs/pydantic-ai.md
+            cp /tmp/pydantic-ai/CHANGELOG.md docs/organized/changelogs/pydantic-ai.md
           else
             # Create a placeholder changelog if none exists
-            echo "# Changelog" > .docs/organized/changelogs/pydantic-ai.md
-            echo "## v${{ steps.check_version.outputs.version }}" >> .docs/organized/changelogs/pydantic-ai.md
-            echo "- Initial release" >> .docs/organized/changelogs/pydantic-ai.md
+            echo "# Changelog" > docs/organized/changelogs/pydantic-ai.md
+            echo "## v${{ steps.check_version.outputs.version }}" >> docs/organized/changelogs/pydantic-ai.md
+            echo "- Initial release" >> docs/organized/changelogs/pydantic-ai.md
           fi
 
       - name: Build package
@@ -145,12 +145,21 @@ jobs:
         run: |
           # Create a proper release archive with docs
           mkdir -p release-package
-          cp -r dist .docs README.md package.json release-package/
+          cp -r dist docs README.md package.json release-package/
+          
+          # Show what files we're including
+          echo "Files in release package:"
+          ls -la release-package
+          ls -la release-package/docs
           
           # Create archive with documentation
           cd release-package
           tar -czvf ../pydantic-ai-docs-server-${{ steps.check_version.outputs.version }}.tar.gz *
           cd ..
+          
+          # Check archive contents
+          echo "Archive contents:"
+          tar -tvf pydantic-ai-docs-server-${{ steps.check_version.outputs.version }}.tar.gz
           
           echo "PACKAGE_FILE=pydantic-ai-docs-server-${{ steps.check_version.outputs.version }}.tar.gz" >> $GITHUB_ENV
 
