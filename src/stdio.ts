@@ -313,9 +313,8 @@ async function main() {
 
   // Status message if docs are missing
   const noDocsMessage = `
-Documentation is not available in this package.
-Please use the version from the official GitHub repository:
-npx -y github:brickfrog/pydantic-ai-docs-server
+Documentation not available. 
+Please make sure the docs directory exists and contains documentation files.
 `;
 
   // Define tools with updated listings
