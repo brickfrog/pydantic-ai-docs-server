@@ -23,7 +23,7 @@ pydantic-ai-docs-server/
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/pydantic-ai-docs-server.git
+   git clone https://github.com/brickfrog/pydantic-ai-docs-server.git
    cd pydantic-ai-docs-server
    ```
 
@@ -76,7 +76,7 @@ Create or update `.cursor/mcp.json` in your project root:
   "mcpServers": {
     "pydantic": {
       "command": "npx",
-      "args": ["-y", "github:yourusername/pydantic-ai-docs-server"]
+      "args": ["-y", "github:brickfrog/pydantic-ai-docs-server"]
     }
   }
 }
@@ -91,7 +91,7 @@ Update `~/.codeium/windsurf/mcp_config.json`:
   "mcpServers": {
     "pydantic": {
       "command": "npx",
-      "args": ["-y", "github:yourusername/pydantic-ai-docs-server"]
+      "args": ["-y", "github:brickfrog/pydantic-ai-docs-server"]
     }
   }
 }

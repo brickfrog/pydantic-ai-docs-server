@@ -10,13 +10,11 @@ You can install this package directly from GitHub:
 
 ```bash
 # Install globally
-npm install -g github:yourusername/pydantic-ai-docs-server
+npm install -g github:brickfrog/pydantic-ai-docs-server
 
 # Or use with npx without installing
-npx github:yourusername/pydantic-ai-docs-server
+npx github:brickfrog/pydantic-ai-docs-server
 ```
-
-Replace `yourusername` with your actual GitHub username.
 
 ### In Cursor
 
@@ -29,7 +27,7 @@ MacOS/Linux
   "mcpServers": {
     "pydantic": {
       "command": "npx",
-      "args": ["-y", "github:yourusername/pydantic-ai-docs-server"]
+      "args": ["-y", "github:brickfrog/pydantic-ai-docs-server"]
     }
   }
 }
@@ -42,7 +40,7 @@ Windows
   "mcpServers": {
     "pydantic": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "github:yourusername/pydantic-ai-docs-server"]
+      "args": ["/c", "npx", "-y", "github:brickfrog/pydantic-ai-docs-server"]
     }
   }
 }
@@ -62,7 +60,7 @@ MacOS/Linux
   "mcpServers": {
     "pydantic": {
       "command": "npx",
-      "args": ["-y", "github:yourusername/pydantic-ai-docs-server"]
+      "args": ["-y", "github:brickfrog/pydantic-ai-docs-server"]
     }
   }
 }
@@ -75,7 +73,7 @@ Windows
   "mcpServers": {
     "pydantic": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "github:yourusername/pydantic-ai-docs-server"]
+      "args": ["/c", "npx", "-y", "github:brickfrog/pydantic-ai-docs-server"]
     }
   }
 }
