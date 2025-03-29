@@ -1,0 +1,47 @@
+# Node.js dependencies
+node_modules/
+
+# Build outputs
+dist/
+
+# Documentation directories that don't need to be in version control
+.docs/raw/
+.docs/organized/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# pydantic-ai source repository (since it's a separate project)
+pydantic-ai/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/

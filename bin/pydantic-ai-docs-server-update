@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+
+import { exec } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const packageRoot = path.resolve(__dirname, '..');
+
+// Check if pydantic-ai repo exists in the project directory
+const repoPath = path.resolve(packageRoot, 'pydantic-ai');
+const repoExists = fs.existsSync(repoPath);
+
+if (!repoExists) {
+  console.error('❌ Error: pydantic-ai repository not found at', repoPath);
+  console.log('Please clone the pydantic-ai repository into the project directory:');
+  console.log(`cd ${packageRoot} && git clone https://github.com/pydantic/pydantic-ai.git`);
+  process.exit(1);
+}
+
+// Execute the update script
+const updateScript = path.join(packageRoot, 'update.sh');
+exec(`bash ${updateScript} ${repoPath}`, { cwd: packageRoot }, (error, stdout, stderr) => {
+  if (error) {
+    console.error(`❌ Error: ${error.message}`);
+    process.exit(1);
+  }
+  
+  if (stderr) {
+    console.error(stderr);
+  }
+  
+  console.log(stdout);
+}); 
