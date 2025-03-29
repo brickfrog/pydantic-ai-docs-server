@@ -44,7 +44,7 @@ To run the server:
 To set up with Cursor, update your .cursor/mcp.json:
 {
   \"mcpServers\": {
-    \"pydantic\": {
+    \"pydantic-ai\": {
       \"command\": \"node\",
       \"args\": [\"$(realpath "$SCRIPT_DIR/dist/stdio.js")\"]
     }

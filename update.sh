@@ -49,7 +49,7 @@ To run the server manually:
 Make sure your .cursor/mcp.json configuration is set up correctly:
 {
   \"mcpServers\": {
-    \"pydantic\": {
+    \"pydantic-ai\": {
       \"command\": \"node\",
       \"args\": [\"$(realpath "$SCRIPT_DIR/dist/stdio.js")\"]
     }

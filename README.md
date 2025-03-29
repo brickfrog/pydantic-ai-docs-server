@@ -25,7 +25,7 @@ MacOS/Linux
 ```json
 {
   "mcpServers": {
-    "pydantic": {
+    "pydantic-ai": {
       "command": "npx",
       "args": ["-y", "github:brickfrog/pydantic-ai-docs-server"]
     }
@@ -38,7 +38,7 @@ Windows
 ```json
 {
   "mcpServers": {
-    "pydantic": {
+    "pydantic-ai": {
       "command": "cmd",
       "args": ["/c", "npx", "-y", "github:brickfrog/pydantic-ai-docs-server"]
     }
@@ -47,7 +47,7 @@ Windows
 ```
 
 This will make all pydantic-ai documentation tools available in your Cursor workspace.
-Note that the MCP server won't be enabled by default. You'll need to go to Cursor settings -> MCP settings and click "enable" on the pydantic MCP server.
+Note that the MCP server won't be enabled by default. You'll need to go to Cursor settings -> MCP settings and click "enable" on the pydantic-ai MCP server.
 
 ### In Windsurf
 
@@ -58,7 +58,7 @@ MacOS/Linux
 ```json
 {
   "mcpServers": {
-    "pydantic": {
+    "pydantic-ai": {
       "command": "npx",
       "args": ["-y", "github:brickfrog/pydantic-ai-docs-server"]
     }
@@ -71,7 +71,7 @@ Windows
 ```json
 {
   "mcpServers": {
-    "pydantic": {
+    "pydantic-ai": {
       "command": "cmd",
       "args": ["/c", "npx", "-y", "github:brickfrog/pydantic-ai-docs-server"]
     }
@@ -83,25 +83,25 @@ This will make all pydantic-ai documentation tools available in your Windsurf wo
 
 ## Tools
 
-### Documentation Tool (`pydanticDocs`)
+### Documentation Tool (`pydanticAIDocs`)
 
 - Get pydantic-ai documentation by requesting specific paths
 - Explore both general guides and API reference documentation
 - Automatically lists available paths when a requested path isn't found
 
-### Examples Tool (`pydanticExamples`)
+### Examples Tool (`pydanticAIExamples`)
 
 - Access code examples showing pydantic-ai implementation patterns
 - List all available examples
 - Get detailed source code for specific examples
 
-### Blog Tool (`pydanticBlog`)
+### Blog Tool (`pydanticAIBlog`)
 
 - Access technical blog posts and articles from pydantic-ai
 - Posts are properly formatted with code block handling
 - Supports various date formats in blog metadata
 
-### Changes Tool (`pydanticChanges`)
+### Changes Tool (`pydanticAIChanges`)
 
 - Access package changelogs
 - List all available package changelogs

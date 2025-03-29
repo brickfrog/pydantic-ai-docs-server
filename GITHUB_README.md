@@ -74,7 +74,7 @@ Create or update `.cursor/mcp.json` in your project root:
 ```json
 {
   "mcpServers": {
-    "pydantic": {
+    "pydantic-ai": {
       "command": "npx",
       "args": ["-y", "github:brickfrog/pydantic-ai-docs-server"]
     }
@@ -89,7 +89,7 @@ Update `~/.codeium/windsurf/mcp_config.json`:
 ```json
 {
   "mcpServers": {
-    "pydantic": {
+    "pydantic-ai": {
       "command": "npx",
       "args": ["-y", "github:brickfrog/pydantic-ai-docs-server"]
     }
@@ -101,10 +101,10 @@ Update `~/.codeium/windsurf/mcp_config.json`:
 
 The server provides these MCP tools:
 
-1. `pydanticDocs` - Access documentation
-2. `pydanticExamples` - Access code examples
-3. `pydanticBlog` - Fetch blog posts
-4. `pydanticChanges` - View changelogs
+1. `pydanticAIDocs` - Access documentation
+2. `pydanticAIExamples` - Access code examples
+3. `pydanticAIBlog` - Fetch blog posts
+4. `pydanticAIChanges` - View changelogs
 
 ## Contributing
 

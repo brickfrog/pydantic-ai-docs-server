@@ -66,7 +66,7 @@ async function fetchBlogPost(url: string) {
 
 // Blog Tool Definition
 const blogTool = {
-  name: "pydanticBlog",
+  name: "pydanticAIBlog",
   description: "Get pydantic-ai blog content. Without a URL, returns a list of all blog posts. With a URL, returns the specific blog post content in markdown format.",
   parameters: z.object({
     url: z.string().describe("URL of a specific blog post to fetch. If the string /blog is passed as the url it returns a list of all blog posts.")
@@ -145,7 +145,7 @@ const changesSchema = z.object({
 });
 
 const changesTool = {
-  name: "pydanticChanges",
+  name: "pydanticAIChanges",
   description: "Get changelog information for pydantic-ai packages. " + packagesListing,
   parameters: changesSchema,
   execute: async (args: { package?: string }) => {
@@ -284,7 +284,7 @@ const availablePathsText = availablePaths.length > 0
   : "No documentation paths available yet. Run the documentation preparation script first.";
 
 const docsTool = {
-  name: "pydanticDocs",
+  name: "pydanticAIDocs",
   description: `Get pydantic-ai documentation. Provide a path to get specific documentation. ${availablePathsText}`,
   parameters: z.object({
     path: z.string().describe("Path to documentation to fetch. For example 'getting-started/index.mdx' or 'api-reference/'")
@@ -339,7 +339,7 @@ const examplesListing = initialExamples.length > 0
   : "\n\nNo code examples available yet. Run the documentation preparation script first.";
 
 const examplesTool = {
-  name: "pydanticExamples",
+  name: "pydanticAIExamples",
   description: "Get pydantic-ai code examples. Without a name, lists all available examples. With a name, returns the specific example code." + examplesListing,
   parameters: z.object({
     name: z.string().optional().describe("Name of the specific example to fetch. If not provided, lists all available examples.")
