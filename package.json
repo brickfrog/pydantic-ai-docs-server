@@ -1,6 +1,6 @@
 {
   "name": "pydantic-ai-docs-server",
-  "version": "0.0.1",
+  "version": "0.0.46",
   "description": "MCP server for accessing pydantic-ai documentation, changelogs, and news.",
   "type": "module",
   "main": "dist/index.js",
@@ -28,7 +28,11 @@
     "type": "git",
     "url": "https://github.com/brickfrog/pydantic-ai-docs-server.git"
   },
-  "keywords": ["pydantic", "documentation", "mcp"],
+  "keywords": [
+    "pydantic",
+    "documentation",
+    "mcp"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
@@ -57,6 +61,7 @@
     "vitest": "^3.0.9"
   },
   "scripts": {
-    "build": "tsup --config tsup.config.js"
+    "build": "tsup --config tsup.config.js",
+    "sync": "node sync-docs.js"
   }
-} 
+}

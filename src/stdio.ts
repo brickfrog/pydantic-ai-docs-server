@@ -144,9 +144,8 @@ const docsBaseDir = fromPackageRoot("docs/raw/");
 // Function to check if MCP server is running with documentation
 function checkDocsStatus() {
   try {
-    return fs.readdir(docsBaseDir)
-      .then(files => files.length > 0)
-      .catch(() => false);
+    // Always return true since we have docs
+    return Promise.resolve(true);
   } catch {
     return Promise.resolve(false);
   }
@@ -330,10 +329,6 @@ npx -y github:brickfrog/pydantic-ai-docs-server
       path: z.string().describe("Path to documentation to fetch. For example 'getting-started/index.mdx' or 'api-reference/'")
     }),
     execute: async (args: { path: string }) => {
-      if (!hasDocumentation) {
-        return noDocsMessage;
-      }
-      
       const docPath = args.path.startsWith("/") ? args.path.slice(1) : args.path;
       
       try {
@@ -351,10 +346,6 @@ npx -y github:brickfrog/pydantic-ai-docs-server
       name: z.string().optional().describe("Name of the specific example to fetch. If not provided, lists all available examples.")
     }),
     execute: async (args: { name?: string }) => {
-      if (!hasDocumentation) {
-        return noDocsMessage;
-      }
-      
       if (!args.name) {
         const examples = await listCodeExamples();
         
@@ -378,10 +369,6 @@ npx -y github:brickfrog/pydantic-ai-docs-server
     description: "Get changelog information for pydantic-ai packages. " + packagesListing,
     parameters: changesSchema,
     execute: async (args: { package?: string }) => {
-      if (!hasDocumentation) {
-        return noDocsMessage;
-      }
-      
       if (!args.package) {
         const packages = await listPackageChangelogs();
         return [

@@ -4,10 +4,6 @@ node_modules/
 # Build outputs
 dist/
 
-# Documentation directories that don't need to be in version control
-.docs/raw/
-.docs/organized/
-
 # Logs
 logs
 *.log
@@ -45,3 +41,5 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+.history
