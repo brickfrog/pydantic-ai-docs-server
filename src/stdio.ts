@@ -143,12 +143,9 @@ const docsBaseDir = fromPackageRoot("docs/raw/");
 
 // Function to check if MCP server is running with documentation
 function checkDocsStatus() {
-  try {
-    // Always return true since we have docs
-    return Promise.resolve(true);
-  } catch {
-    return Promise.resolve(false);
-  }
+  // Always return true regardless of whether docs exist
+  console.log("Docs status check - forcing to true");
+  return Promise.resolve(true);
 }
 
 async function listDirContents(dirPath: string) {
