@@ -82,6 +82,8 @@ Create or update `.cursor/mcp.json` in your project root:
 }
 ```
 
+> **Note:** The first time the server runs, it will automatically initialize and download the documentation if it doesn't exist. You don't need to run any additional scripts.
+
 ### Windsurf
 
 Update `~/.codeium/windsurf/mcp_config.json`:

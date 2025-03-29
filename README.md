@@ -49,6 +49,8 @@ Windows
 This will make all pydantic-ai documentation tools available in your Cursor workspace.
 Note that the MCP server won't be enabled by default. You'll need to go to Cursor settings -> MCP settings and click "enable" on the pydantic-ai MCP server.
 
+> **Note:** The first time the server runs, it will automatically initialize and download the documentation if it doesn't exist. You don't need to run any additional scripts.
+
 ### In Windsurf
 
 Create or update `~/.codeium/windsurf/mcp_config.json`:

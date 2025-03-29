@@ -5,6 +5,42 @@ import { FastMCP } from 'tylerbarnes-fastmcp-fix';
 import { JSDOM } from 'jsdom';
 import { z } from 'zod';
 import * as path from 'node:path';
+import { existsSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+
+// Auto-initialization function - checks if docs exist and runs init script if needed
+async function ensureDocsInitialized() {
+  const docsDir = fromPackageRoot(".docs/raw");
+  const pydanticAIDir = fromPackageRoot("pydantic-ai");
+  
+  try {
+    // Check if docs directory exists and has content
+    const hasContent = existsSync(docsDir) && (await fs.readdir(docsDir)).length > 0;
+    
+    if (!hasContent) {
+      console.log("📚 Documentation not found or empty. Running initialization script...");
+      
+      // Run the initialization script
+      const initScriptPath = fromPackageRoot("init.sh");
+      if (existsSync(initScriptPath)) {
+        console.log("🔄 Running initialization script...");
+        try {
+          execSync(`bash "${initScriptPath}"`, { stdio: 'inherit' });
+          console.log("✅ Initialization complete!");
+        } catch (error) {
+          console.error("❌ Initialization failed:", error);
+          console.log("⚠️ MCP server will run with limited functionality until docs are initialized");
+        }
+      } else {
+        console.error("❌ Initialization script not found at:", initScriptPath);
+        console.log("⚠️ MCP server will run with limited functionality until docs are initialized");
+      }
+    }
+  } catch (error) {
+    console.error("⚠️ Error checking documentation:", error);
+    console.log("⚠️ MCP server will run with limited functionality until docs are initialized");
+  }
+}
 
 // Blog Tool - Fetch pydantic-ai blog posts
 async function fetchBlogPosts() {
@@ -133,36 +169,6 @@ ${availablePackages}`
   }
 }
 
-// Initialize available packages list
-const initialPackages = await listPackageChangelogs();
-const packagesListing = initialPackages.length > 0 
-  ? "\n\nAvailable packages: " + initialPackages.map(pkg => pkg.name).join(", ") 
-  : "\n\nNo package changelogs available yet. Run the documentation preparation script first.";
-
-// Changes Tool Definition
-const changesSchema = z.object({
-  package: z.string().optional().describe("Name of the specific package to fetch changelog for. If not provided, lists all available packages.")
-});
-
-const changesTool = {
-  name: "pydanticAIChanges",
-  description: "Get changelog information for pydantic-ai packages. " + packagesListing,
-  parameters: changesSchema,
-  execute: async (args: { package?: string }) => {
-    if (!args.package) {
-      const packages = await listPackageChangelogs();
-      return [
-        "Available package changelogs:",
-        "",
-        ...packages.map(pkg => `- ${pkg.name}`)
-      ].join("\n");
-    }
-    
-    const content = await readPackageChangelog(args.package);
-    return content;
-  }
-};
-
 // Documentation Tool
 const docsBaseDir = fromPackageRoot(".docs/raw/");
 
@@ -277,31 +283,13 @@ async function getAvailablePaths(): Promise<string[]> {
   }
 }
 
-// Docs Tool Definition
-const availablePaths = await getAvailablePaths();
-const availablePathsText = availablePaths.length > 0
-  ? "Available top-level paths: " + availablePaths.join(", ")
-  : "No documentation paths available yet. Run the documentation preparation script first.";
-
-const docsTool = {
-  name: "pydanticAIDocs",
-  description: `Get pydantic-ai documentation. Provide a path to get specific documentation. ${availablePathsText}`,
-  parameters: z.object({
-    path: z.string().describe("Path to documentation to fetch. For example 'getting-started/index.mdx' or 'api-reference/'")
-  }),
-  execute: async (args: { path: string }) => {
-    const docPath = args.path.startsWith("/") ? args.path.slice(1) : args.path;
-    
-    try {
-      return await readMdxContent(docPath);
-    } catch (error) {
-      return await findNearestDirectory(docPath, availablePaths);
-    }
-  }
-};
-
 // Code Examples Tool
 const examplesDir = fromPackageRoot(".docs/organized/code-examples");
+
+// Changes Tool Schema Definition
+const changesSchema = z.object({
+  package: z.string().optional().describe("Name of the specific package to fetch changelog for. If not provided, lists all available packages.")
+});
 
 async function listCodeExamples() {
   try {
@@ -332,44 +320,103 @@ async function readCodeExample(filename: string) {
   }
 }
 
-// Examples Tool Definition
-const initialExamples = await listCodeExamples();
-const examplesListing = initialExamples.length > 0
-  ? "\n\nAvailable examples: " + initialExamples.join(", ")
-  : "\n\nNo code examples available yet. Run the documentation preparation script first.";
+// Initialize and start the MCP server
+async function main() {
+  // Check and initialize docs if needed
+  await ensureDocsInitialized();
+  
+  // Initialize available paths lists after potential initialization
+  const availablePaths = await getAvailablePaths();
+  const availablePathsText = availablePaths.length > 0
+    ? "Available top-level paths: " + availablePaths.join(", ")
+    : "No documentation paths available yet. Run the documentation preparation script first.";
 
-const examplesTool = {
-  name: "pydanticAIExamples",
-  description: "Get pydantic-ai code examples. Without a name, lists all available examples. With a name, returns the specific example code." + examplesListing,
-  parameters: z.object({
-    name: z.string().optional().describe("Name of the specific example to fetch. If not provided, lists all available examples.")
-  }),
-  execute: async (args: { name?: string }) => {
-    if (!args.name) {
-      const examples = await listCodeExamples();
+  const initialExamples = await listCodeExamples();
+  const examplesListing = initialExamples.length > 0
+    ? "\n\nAvailable examples: " + initialExamples.join(", ")
+    : "\n\nNo code examples available yet. Run the documentation preparation script first.";
+    
+  const initialPackages = await listPackageChangelogs();
+  const packagesListing = initialPackages.length > 0 
+    ? "\n\nAvailable packages: " + initialPackages.map(pkg => pkg.name).join(", ") 
+    : "\n\nNo package changelogs available yet. Run the documentation preparation script first.";
+
+  // Define tools with updated listings
+  const docsTool = {
+    name: "pydanticAIDocs",
+    description: `Get pydantic-ai documentation. Provide a path to get specific documentation. ${availablePathsText}`,
+    parameters: z.object({
+      path: z.string().describe("Path to documentation to fetch. For example 'getting-started/index.mdx' or 'api-reference/'")
+    }),
+    execute: async (args: { path: string }) => {
+      const docPath = args.path.startsWith("/") ? args.path.slice(1) : args.path;
       
-      if (examples.length === 0) {
-        return "No examples available yet. Run the documentation preparation script first.";
+      try {
+        return await readMdxContent(docPath);
+      } catch (error) {
+        return await findNearestDirectory(docPath, availablePaths);
+      }
+    }
+  };
+
+  const examplesTool = {
+    name: "pydanticAIExamples",
+    description: "Get pydantic-ai code examples. Without a name, lists all available examples. With a name, returns the specific example code." + examplesListing,
+    parameters: z.object({
+      name: z.string().optional().describe("Name of the specific example to fetch. If not provided, lists all available examples.")
+    }),
+    execute: async (args: { name?: string }) => {
+      if (!args.name) {
+        const examples = await listCodeExamples();
+        
+        if (examples.length === 0) {
+          return "No examples available yet. Run the documentation preparation script first.";
+        }
+        
+        return [
+          "Available pydantic-ai code examples:",
+          "",
+          ...examples.map(ex => `- ${ex}`)
+        ].join("\n");
       }
       
-      return [
-        "Available pydantic-ai code examples:",
-        "",
-        ...examples.map(ex => `- ${ex}`)
-      ].join("\n");
+      return readCodeExample(args.name);
     }
-    
-    return readCodeExample(args.name);
-  }
-};
+  };
 
-// Initialize and start the MCP server
-const mcp = new FastMCP({
-  name: "pydantic-ai-docs",
-  version: "0.0.1"
-});
-mcp.addTool(docsTool);
-mcp.addTool(examplesTool);
-mcp.addTool(blogTool);
-mcp.addTool(changesTool);
-mcp.start(); 
+  const changesTool = {
+    name: "pydanticAIChanges",
+    description: "Get changelog information for pydantic-ai packages. " + packagesListing,
+    parameters: changesSchema,
+    execute: async (args: { package?: string }) => {
+      if (!args.package) {
+        const packages = await listPackageChangelogs();
+        return [
+          "Available package changelogs:",
+          "",
+          ...packages.map(pkg => `- ${pkg.name}`)
+        ].join("\n");
+      }
+      
+      const content = await readPackageChangelog(args.package);
+      return content;
+    }
+  };
+
+  // Start the MCP server
+  const mcp = new FastMCP({
+    name: "pydantic-ai-docs",
+    version: "0.0.1"
+  });
+  mcp.addTool(docsTool);
+  mcp.addTool(examplesTool);
+  mcp.addTool(blogTool);
+  mcp.addTool(changesTool);
+  mcp.start();
+}
+
+// Run the main function
+main().catch(error => {
+  console.error("Fatal error:", error);
+  process.exit(1);
+}); 
