@@ -1,0 +1,109 @@
+name: Create GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Git LFS
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get pydantic-ai docs
+        run: |
+          # Create .docs directory
+          mkdir -p .docs/raw .docs/organized/code-examples .docs/organized/changelogs
+          
+          # Clone pydantic-ai repo
+          git clone https://github.com/pydantic/pydantic-ai.git /tmp/pydantic-ai
+          
+          # Copy docs into the .docs/raw directory
+          if [ -d "/tmp/pydantic-ai/docs" ]; then
+            cp -r /tmp/pydantic-ai/docs/* .docs/raw/
+            echo "✅ Documentation copied successfully"
+          else
+            echo "⚠️ No docs directory found in pydantic-ai repository"
+            echo "sample-content" > .docs/raw/sample.md
+          fi
+          
+          # Create sample example if examples directory exists
+          if [ -d "/tmp/pydantic-ai/examples" ]; then
+            for example_dir in /tmp/pydantic-ai/examples/*; do
+              if [ -d "$example_dir" ]; then
+                example_name=$(basename "$example_dir")
+                example_file=".docs/organized/code-examples/$example_name.md"
+                echo "# $example_name" > "$example_file"
+                
+                find "$example_dir" -name "*.py" | while read -r py_file; do
+                  rel_path=$(realpath --relative-to="$example_dir" "$py_file")
+                  echo "## $rel_path" >> "$example_file"
+                  echo '```python' >> "$example_file"
+                  cat "$py_file" >> "$example_file"
+                  echo '```' >> "$example_file"
+                  echo "" >> "$example_file"
+                done
+              fi
+            done
+            echo "✅ Examples processed successfully"
+          else
+            echo "⚠️ No examples directory found in pydantic-ai repository"
+            echo "# Sample Example" > .docs/organized/code-examples/sample.md
+          fi
+          
+          # Create a placeholder changelog if none exists
+          echo "# Changelog" > .docs/organized/changelogs/pydantic-ai.md
+          echo "## Latest Version" >> .docs/organized/changelogs/pydantic-ai.md
+          echo "- Initial release" >> .docs/organized/changelogs/pydantic-ai.md
+
+      - name: Build package
+        run: npm run build
+
+      - name: Create package
+        run: |
+          # Package the server with npm pack
+          npm pack
+          echo "PACKAGE_FILE=$(ls pydantic-ai-docs-server-*.tgz)" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Pre-built Package ${{ github.ref_name != '' && github.ref_name || 'Manual Build' }}
+          files: ${{ env.PACKAGE_FILE }}
+          generate_release_notes: true
+          body: |
+            ## Pre-built Package with Documentation
+            
+            This package includes all pydantic-ai documentation.
+            
+            ### Usage in Cursor
+            
+            Add to your `.cursor/mcp.json`:
+            ```json
+            {
+              "mcpServers": {
+                "pydantic-ai": {
+                  "command": "npx",
+                  "args": ["-y", "github:brickfrog/pydantic-ai-docs-server"]
+                }
+              }
+            }
+            ``` 

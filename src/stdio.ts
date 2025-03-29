@@ -5,42 +5,6 @@ import { FastMCP } from 'tylerbarnes-fastmcp-fix';
 import { JSDOM } from 'jsdom';
 import { z } from 'zod';
 import * as path from 'node:path';
-import { existsSync } from 'node:fs';
-import { execSync } from 'node:child_process';
-
-// Auto-initialization function - checks if docs exist and runs init script if needed
-async function ensureDocsInitialized() {
-  const docsDir = fromPackageRoot(".docs/raw");
-  const pydanticAIDir = fromPackageRoot("pydantic-ai");
-  
-  try {
-    // Check if docs directory exists and has content
-    const hasContent = existsSync(docsDir) && (await fs.readdir(docsDir)).length > 0;
-    
-    if (!hasContent) {
-      console.log("📚 Documentation not found or empty. Running initialization script...");
-      
-      // Run the initialization script
-      const initScriptPath = fromPackageRoot("init.sh");
-      if (existsSync(initScriptPath)) {
-        console.log("🔄 Running initialization script...");
-        try {
-          execSync(`bash "${initScriptPath}"`, { stdio: 'inherit' });
-          console.log("✅ Initialization complete!");
-        } catch (error) {
-          console.error("❌ Initialization failed:", error);
-          console.log("⚠️ MCP server will run with limited functionality until docs are initialized");
-        }
-      } else {
-        console.error("❌ Initialization script not found at:", initScriptPath);
-        console.log("⚠️ MCP server will run with limited functionality until docs are initialized");
-      }
-    }
-  } catch (error) {
-    console.error("⚠️ Error checking documentation:", error);
-    console.log("⚠️ MCP server will run with limited functionality until docs are initialized");
-  }
-}
 
 // Blog Tool - Fetch pydantic-ai blog posts
 async function fetchBlogPosts() {
@@ -169,21 +133,23 @@ ${availablePackages}`
   }
 }
 
+// Changes Tool Schema Definition
+const changesSchema = z.object({
+  package: z.string().optional().describe("Name of the specific package to fetch changelog for. If not provided, lists all available packages.")
+});
+
 // Documentation Tool
 const docsBaseDir = fromPackageRoot(".docs/raw/");
 
-// Utility function to check if docs are available and provide guidance if not
-function getDocsUnavailableMessage() {
-  return `
-Documentation is not available. The server needs to be initialized first.
-
-If using npx:
-  npx -y github:brickfrog/pydantic-ai-docs-server/init.sh
-
-If you've cloned the repository:
-  ./init.sh
-  
-After initialization, restart the server.`;
+// Function to check if MCP server is running with documentation
+function checkDocsStatus() {
+  try {
+    return fs.readdir(docsBaseDir)
+      .then(files => files.length > 0)
+      .catch(() => false);
+  } catch {
+    return Promise.resolve(false);
+  }
 }
 
 async function listDirContents(dirPath: string) {
@@ -300,11 +266,6 @@ async function getAvailablePaths(): Promise<string[]> {
 // Code Examples Tool
 const examplesDir = fromPackageRoot(".docs/organized/code-examples");
 
-// Changes Tool Schema Definition
-const changesSchema = z.object({
-  package: z.string().optional().describe("Name of the specific package to fetch changelog for. If not provided, lists all available packages.")
-});
-
 async function listCodeExamples() {
   try {
     const files = await fs.readdir(examplesDir);
@@ -336,27 +297,30 @@ async function readCodeExample(filename: string) {
 
 // Initialize and start the MCP server
 async function main() {
-  // Check and initialize docs if needed
-  await ensureDocsInitialized();
+  const hasDocumentation = await checkDocsStatus();
   
-  // Initialize available paths lists after potential initialization
+  // Get available paths for tools
   const availablePaths = await getAvailablePaths();
-  const docsAvailable = availablePaths.length > 0;
-  const availablePathsText = docsAvailable
+  const availablePathsText = availablePaths.length > 0
     ? "Available top-level paths: " + availablePaths.join(", ")
-    : "No documentation paths available yet. Run the documentation preparation script first.";
+    : "No documentation available yet. Please contact the package author.";
 
   const initialExamples = await listCodeExamples();
-  const examplesAvailable = initialExamples.length > 0;
-  const examplesListing = examplesAvailable
+  const examplesListing = initialExamples.length > 0
     ? "\n\nAvailable examples: " + initialExamples.join(", ")
-    : "\n\nNo code examples available yet. Run the documentation preparation script first.";
+    : "\n\nNo examples available yet. Please contact the package author.";
     
   const initialPackages = await listPackageChangelogs();
-  const packagesAvailable = initialPackages.length > 0;
-  const packagesListing = packagesAvailable 
+  const packagesListing = initialPackages.length > 0 
     ? "\n\nAvailable packages: " + initialPackages.map(pkg => pkg.name).join(", ") 
-    : "\n\nNo package changelogs available yet. Run the documentation preparation script first.";
+    : "\n\nNo changelog information available yet. Please contact the package author.";
+
+  // Status message if docs are missing
+  const noDocsMessage = `
+Documentation is not available in this package.
+Please use the version from the official GitHub repository:
+npx -y github:brickfrog/pydantic-ai-docs-server
+`;
 
   // Define tools with updated listings
   const docsTool = {
@@ -366,9 +330,8 @@ async function main() {
       path: z.string().describe("Path to documentation to fetch. For example 'getting-started/index.mdx' or 'api-reference/'")
     }),
     execute: async (args: { path: string }) => {
-      // Check if docs are available, if not, return helpful message
-      if (!docsAvailable) {
-        return getDocsUnavailableMessage();
+      if (!hasDocumentation) {
+        return noDocsMessage;
       }
       
       const docPath = args.path.startsWith("/") ? args.path.slice(1) : args.path;
@@ -388,16 +351,15 @@ async function main() {
       name: z.string().optional().describe("Name of the specific example to fetch. If not provided, lists all available examples.")
     }),
     execute: async (args: { name?: string }) => {
-      // Check if examples are available, if not, return helpful message
-      if (!examplesAvailable) {
-        return getDocsUnavailableMessage();
+      if (!hasDocumentation) {
+        return noDocsMessage;
       }
       
       if (!args.name) {
         const examples = await listCodeExamples();
         
         if (examples.length === 0) {
-          return "No examples available yet. Run the documentation preparation script first.";
+          return "No examples available yet. Please contact the package author.";
         }
         
         return [
@@ -416,9 +378,8 @@ async function main() {
     description: "Get changelog information for pydantic-ai packages. " + packagesListing,
     parameters: changesSchema,
     execute: async (args: { package?: string }) => {
-      // Check if packages are available, if not, return helpful message
-      if (!packagesAvailable) {
-        return getDocsUnavailableMessage();
+      if (!hasDocumentation) {
+        return noDocsMessage;
       }
       
       if (!args.package) {

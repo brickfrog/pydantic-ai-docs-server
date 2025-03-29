@@ -1,0 +1,6 @@
+# Track documentation with Git LFS
+.docs/raw/** filter=lfs diff=lfs merge=lfs -text
+.docs/organized/** filter=lfs diff=lfs merge=lfs -text
+
+# Track dist with Git LFS
+dist/** filter=lfs diff=lfs merge=lfs -text 

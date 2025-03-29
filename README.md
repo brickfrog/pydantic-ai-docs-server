@@ -49,19 +49,7 @@ Windows
 This will make all pydantic-ai documentation tools available in your Cursor workspace.
 Note that the MCP server won't be enabled by default. You'll need to go to Cursor settings -> MCP settings and click "enable" on the pydantic-ai MCP server.
 
-> **Note:** The first time the server runs, it will automatically initialize and download the documentation if it doesn't exist. You don't need to run any additional scripts.
-
-### Manual Initialization
-
-If automatic initialization fails, you can manually initialize the documentation:
-
-```bash
-# Using npx
-npx -y github:brickfrog/pydantic-ai-docs-server/init.sh
-
-# Or if you've cloned the repository:
-./init.sh
-```
+That's it! Documentation is included in the package - no additional steps required.
 
 ### In Windsurf
 

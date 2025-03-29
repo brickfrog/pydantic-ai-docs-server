@@ -1,5 +1,5 @@
 export default {
-  entryPoints: ['src/stdio.ts', 'src/prepare-docs/prepare.ts', 'src/prepare-docs/auto-init.js'],
+  entryPoints: ['src/stdio.ts'],
   format: ['esm'],
   treeshake: 'smallest',
   splitting: true,
