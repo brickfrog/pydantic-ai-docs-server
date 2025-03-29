@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "pydantic-ai-docs-server": "dist/stdio.js"
+    "pydantic-ai-docs-server": "bin/pydantic-ai-docs"
   },
   "files": [
     "dist",
